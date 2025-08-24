@@ -1,5 +1,7 @@
 const STORAGE_KEY = "dqg_quotes_v1";
 const SESSION_LAST_INDEX_KEY = "dqg_last_index_v1";
+const FILTER_KEY = "dqg_last_filter_v1";
+
 
 // Initial array of quotes with text and category
 let quotes = [
@@ -63,13 +65,14 @@ function addQuote() {
 
   quotes.push({ text: newText, category: newCategory });
    saveQuotes(); 
+   populateCategories();
 
   document.getElementById('newQuoteText').value = "";
   document.getElementById('newQuoteCategory').value = "";
 
   alert("Quote added successfully!");
 }
-function saveQuotes() {
+ function saveQuotes() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(quotes));
 }
 
@@ -121,6 +124,47 @@ function importFromJsonFile(event) {
   };
   fileReader.readAsText(event.target.files[0]);
 }
+function populateCategories() {
+  const categorySelect = document.getElementById("categoryFilter");
+  const uniqueCategories = [...new Set(quotes.map(q => q.category))];
+
+  // Remove all except "All Categories"
+  categorySelect.querySelectorAll("option:not([value='all'])").forEach(opt => opt.remove());
+
+  // Add new categories
+  uniqueCategories.forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    categorySelect.appendChild(opt);
+  });
+
+  // Restore last selected filter from localStorage
+  const savedFilter = localStorage.getItem(FILTER_KEY) || "all";
+  categorySelect.value = savedFilter;
+}
+function filterQuotes() {
+  const categorySelect = document.getElementById("categoryFilter");
+  const selectedCategory = categorySelect.value;
+
+  localStorage.setItem(FILTER_KEY, selectedCategory); // remember user's filter choice
+
+  let filteredQuotes = quotes;
+
+  if (selectedCategory !== "all") {
+    filteredQuotes = quotes.filter(q => q.category === selectedCategory);
+  }
+
+  if (filteredQuotes.length === 0) {
+    quoteDisplay.textContent = "No quotes available for this category.";
+    return;
+  }
+
+  const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+  const { text, category } = filteredQuotes[randomIndex];
+  quoteDisplay.innerHTML = `<strong>${text}</strong> <em>(${category})</em>`;
+}
+
 
 // Event Listeners
 newQuoteButton.addEventListener('click', showRandomQuote);
@@ -130,4 +174,5 @@ document.getElementById('exportBtn').addEventListener('click', exportToJsonFile)
 // Initialize page
 loadQuotes();
 showRandomQuote();
+filterQuotes();
 createAddQuoteForm();
