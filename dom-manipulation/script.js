@@ -369,6 +369,32 @@ async function pushLocalNewQuote(q) {
     console.warn("Simulated push failed:", e);
   }
 }
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+    const serverQuotes = await response.json();
+
+    // Convert fetched data into quote objects
+    const newQuotes = serverQuotes.slice(0, 5).map(item => ({
+      text: item.title,
+      author: 'Server',
+      category: 'Imported'
+    }));
+
+    // Merge with existing quotes and remove duplicates
+    quotes = [...quotes, ...newQuotes].filter(
+      (q, index, self) =>
+        index === self.findIndex(t => t.text === q.text && t.author === q.author)
+    );
+
+    saveQuotes();
+    displayQuotes();
+    alert('Quotes synced with server!');
+  } catch (error) {
+    console.error('Error fetching quotes:', error);
+  }
+}
+setInterval(fetchQuotesFromServer, 60000);
 
 // Wrap/add to addQuote so we ensure metadata for the last added quote and simulate push
 (function hookAddQuote() {
