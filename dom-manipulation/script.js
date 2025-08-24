@@ -395,6 +395,37 @@ async function fetchQuotesFromServer() {
   }
 }
 setInterval(fetchQuotesFromServer, 60000);
+async function syncQuotes() {
+  try {
+    // Fetch latest data from server
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+    const serverQuotes = await response.json();
+
+    // Simulate server quotes as proper objects
+    const formattedServerQuotes = serverQuotes.slice(0, 5).map(item => ({
+      text: item.title,
+      author: 'Server',
+      category: 'Imported'
+    }));
+
+    // Merge local and server data (server takes precedence in conflicts)
+    formattedServerQuotes.forEach(serverQuote => {
+      const exists = quotes.find(q => q.text === serverQuote.text);
+      if (!exists) {
+        quotes.push(serverQuote);
+      }
+    });
+
+    saveQuotes();
+    displayQuotes();
+
+    alert('Quotes synced successfully with server.');
+  } catch (error) {
+    console.error('Sync failed:', error);
+    alert('Error syncing quotes with server.');
+  }
+}
+setInterval(syncQuotes, 60000); 
 
 // Wrap/add to addQuote so we ensure metadata for the last added quote and simulate push
 (function hookAddQuote() {
