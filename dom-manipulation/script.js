@@ -8,9 +8,6 @@ let quotes = [
 // DOM Elements
 const quoteDisplay = document.getElementById('quoteDisplay');
 const newQuoteButton = document.getElementById('newQuote');
-const addQuoteButton = document.getElementById('addQuoteBtn');
-const newQuoteTextInput = document.getElementById('newQuoteText');
-const newQuoteCategoryInput = document.getElementById('newQuoteCategory');
 
 // Function to display a random quote
 function showRandomQuote() {
@@ -24,10 +21,36 @@ function showRandomQuote() {
   quoteDisplay.innerHTML = `<strong>${text}</strong> <em>(${category})</em>`;
 }
 
+// Function to create and insert the Add Quote form dynamically
+function createAddQuoteForm() {
+  const formContainer = document.createElement('div');
+  formContainer.style.marginTop = "20px";
+
+  const quoteInput = document.createElement('input');
+  quoteInput.type = "text";
+  quoteInput.placeholder = "Enter a new quote";
+  quoteInput.id = "newQuoteText";
+
+  const categoryInput = document.createElement('input');
+  categoryInput.type = "text";
+  categoryInput.placeholder = "Enter quote category";
+  categoryInput.id = "newQuoteCategory";
+
+  const addButton = document.createElement('button');
+  addButton.textContent = "Add Quote";
+  addButton.addEventListener('click', addQuote);
+
+  formContainer.appendChild(quoteInput);
+  formContainer.appendChild(categoryInput);
+  formContainer.appendChild(addButton);
+
+  document.body.appendChild(formContainer);
+}
+
 // Function to add a new quote dynamically
 function addQuote() {
-  const newText = newQuoteTextInput.value.trim();
-  const newCategory = newQuoteCategoryInput.value.trim();
+  const newText = document.getElementById('newQuoteText').value.trim();
+  const newCategory = document.getElementById('newQuoteCategory').value.trim();
 
   if (!newText || !newCategory) {
     alert("Please enter both a quote and a category.");
@@ -35,15 +58,16 @@ function addQuote() {
   }
 
   quotes.push({ text: newText, category: newCategory });
-  newQuoteTextInput.value = "";
-  newQuoteCategoryInput.value = "";
+
+  document.getElementById('newQuoteText').value = "";
+  document.getElementById('newQuoteCategory').value = "";
 
   alert("Quote added successfully!");
 }
 
 // Event Listeners
 newQuoteButton.addEventListener('click', showRandomQuote);
-addQuoteButton.addEventListener('click', addQuote);
 
-// Show an initial random quote on page load
+// Initialize page
 showRandomQuote();
+createAddQuoteForm();
